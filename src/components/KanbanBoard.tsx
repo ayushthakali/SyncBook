@@ -3,7 +3,7 @@
 import { Task } from "@/lib/features/tasks/taskSlice";
 import { CSS } from "@dnd-kit/utilities";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
-import { useAppDispatch } from "@/lib/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { pointerWithin, DndContext, DragEndEvent } from "@dnd-kit/core";
 import { openTaskModal } from "@/lib/features/ui/uiSlice";
 import {
@@ -27,28 +27,44 @@ export default function KanbanBoard() {
     isLoading,
     isError,
   } = useGetTasksQuery();
-
+  const { searchTerm, filterPriority } = useAppSelector((state) => state.ui);
   const [updateTaskStatus] = useUpdateTaskStatusMutation();
+
+  const filteredFn = (task: Task) => {
+    const matchesSearch = task.title
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesPriority =
+      filterPriority === "all" || task.priority === filterPriority;
+
+    return matchesSearch && matchesPriority;
+  };
+
+  const filteredTasks = {
+    todo: data.todo.filter(filteredFn),
+    inProgress: data.inProgress.filter(filteredFn),
+    done: data.done.filter(filteredFn),
+  };
 
   const columnData: ColumnProps[] = [
     {
       id: "todo",
       title: "To Do",
-      tasks: data.todo,
+      tasks: filteredTasks.todo,
       color: "bg-gray-100",
       shadow: "shadow-gray-300",
     },
     {
       id: "in-progress",
       title: "In Progress",
-      tasks: data.inProgress,
+      tasks: filteredTasks.inProgress,
       color: "bg-blue-50",
       shadow: "shadow-blue-200",
     },
     {
       id: "done",
       title: "Done",
-      tasks: data.done,
+      tasks: filteredTasks.done,
       color: "bg-green-50",
       shadow: "shadow-green-200",
     },
@@ -65,13 +81,21 @@ export default function KanbanBoard() {
     await updateTaskStatus({ id: taskId, status: newStatus });
   };
 
-  if (isLoading)
-    <div className="p-10 text-center font-bold">Syncing with Database...</div>;
+  if (isLoading) {
+    return (
+      <div className="p-10 text-center text-blue-800 font-bold">
+        Syncing with Database...
+      </div>
+    );
+  }
 
-  if (isError)
-    <div className="p-10 text-red-500">
-      Failed to load tasks. Check your keys.
-    </div>;
+  if (isError) {
+    return (
+      <div className="p-10 text-red-500 text-center">
+        Failed to load tasks. Check your connection.
+      </div>
+    );
+  }
 
   return (
     <DndContext collisionDetection={pointerWithin} onDragEnd={handleDragEnd}>

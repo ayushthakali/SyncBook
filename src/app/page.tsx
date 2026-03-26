@@ -1,45 +1,31 @@
 "use client";
 
-// import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-// import { addTask, selectAllTasks } from "@/lib/features/tasks/taskSlice";
 import KanbanBoard from "@/components/KanbanBoard";
 import CreateTaskModal from "@/components/CreateTaskModal";
+import FilterBar from "@/components/FilterBar";
+import StatsHeader from "@/components/StatsHeader";
 
 export default function Home() {
-  // const dispatch = useAppDispatch();
-  // const tasks = useAppSelector(selectAllTasks);
-
-  // const handleAddTask = () => {
-  //   dispatch(
-  //     addTask({
-  //       id: uuidv4(),
-  //       title: `New Task ${tasks.length + 1}`,
-  //       description: "Built with Redux Toolkit",
-  //       status: "todo",
-  //       priority: "high",
-  //       createdAt: new Date().toISOString(),
-  //     }),
-  //   );
-  // };
-
   return (
-    <div className="min-h-screen bg-slate-50 ">
-      <header className="bg-white border-b p-4 flex justify-between items-center px-8">
-        <h1 className="text-3xl font-bold tracking-wider text-slate-800">
-          SYNC
-        </h1>
-        <button
-          // onClick={handleAddTask}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition"
-        >
-          + New Task
-        </button>
-      </header>
+    <main className="min-h-screen bg-gradient-to-br from-blue-300 via-indigo-300 to-purple-300">
+      <div className="max-w-[1600px] mx-auto px-6 py-8">
+        <div className="flex flex-col gap-1 mb-8 bg-white/30 p-5 rounded-xl">
+          <h1 className="text-4xl font-bold text-gray-900 tracking-tighter">
+            SYNC <span className="text-blue-700">Board</span>
+          </h1>
+          <p className="text-gray-800 text-sm">
+            Manage your project tasks and track progress in real-time.
+          </p>
+        </div>
+        <StatsHeader />
+        <FilterBar />
 
-      <main>
-        <KanbanBoard />
-        <CreateTaskModal />
-      </main>
-    </div>
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+          <KanbanBoard />
+        </div>
+      </div>
+
+      <CreateTaskModal />
+    </main>
   );
 }

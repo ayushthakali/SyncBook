@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PriorityDropdown, { Priority } from "./PriorityDropdown";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { closeTaskModal } from "@/lib/features/ui/uiSlice";
@@ -21,6 +21,17 @@ function CreateTaskModal() {
   const [createTask] = useCreateTaskMutation();
   const dispatch = useAppDispatch();
   const { activeColumn, isTaskModalOpen } = useAppSelector((state) => state.ui);
+
+  useEffect(() => {
+    if (isTaskModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isTaskModalOpen]);
 
   if (!isTaskModalOpen) return null;
 
