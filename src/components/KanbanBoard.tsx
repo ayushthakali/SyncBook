@@ -4,20 +4,27 @@ import { Task } from "@/lib/features/tasks/taskSlice";
 import { CSS } from "@dnd-kit/utilities";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { pointerWithin, DndContext, DragEndEvent } from "@dnd-kit/core";
+import {
+  pointerWithin,
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+} from "@dnd-kit/core";
 import { openTaskModal } from "@/lib/features/ui/uiSlice";
 import {
   useDeleteTaskMutation,
   useGetTasksQuery,
   useUpdateTaskStatusMutation,
 } from "@/lib/features/api/apiSlice";
-import { Trash2 } from "lucide-react";
+import { PackageOpen, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
 
 interface ColumnProps {
   id: string;
-  color: string;
   title: string;
-  shadow: string;
+  accent: string;
+  dot: string;
   tasks: Task[];
 }
 
@@ -29,6 +36,7 @@ export default function KanbanBoard() {
   } = useGetTasksQuery();
   const { searchTerm, filterPriority } = useAppSelector((state) => state.ui);
   const [updateTaskStatus] = useUpdateTaskStatusMutation();
+  const [activeTask, setActiveTask] = useState<Task | null>(null); // 👈 track dragging task
 
   const filteredFn = (task: Task) => {
     const matchesSearch = task.title
@@ -36,7 +44,6 @@ export default function KanbanBoard() {
       .includes(searchTerm.toLowerCase());
     const matchesPriority =
       filterPriority === "all" || task.priority === filterPriority;
-
     return matchesSearch && matchesPriority;
   };
 
@@ -46,90 +53,140 @@ export default function KanbanBoard() {
     done: data.done.filter(filteredFn),
   };
 
+  const allTasks = [...data.todo, ...data.inProgress, ...data.done];
+
   const columnData: ColumnProps[] = [
     {
       id: "todo",
       title: "To Do",
+      accent: "border-white/10",
+      dot: "bg-white/40",
       tasks: filteredTasks.todo,
-      color: "bg-gray-100",
-      shadow: "shadow-gray-300",
     },
     {
       id: "in-progress",
       title: "In Progress",
+      accent: "border-amber-500/20",
+      dot: "bg-amber-400",
       tasks: filteredTasks.inProgress,
-      color: "bg-blue-50",
-      shadow: "shadow-blue-200",
     },
     {
       id: "done",
       title: "Done",
+      accent: "border-emerald-500/20",
+      dot: "bg-emerald-400",
       tasks: filteredTasks.done,
-      color: "bg-green-50",
-      shadow: "shadow-green-200",
     },
   ];
 
+  const handleDragStart = (e: DragStartEvent) => {
+    const task = allTasks.find((t) => t.id === e.active.id);
+    if (task) setActiveTask(task);
+  };
+
   const handleDragEnd = async (e: DragEndEvent) => {
+    setActiveTask(null);
     const { active, over } = e;
     if (!active.data.current || !over) return;
     if (active.data.current.status === over.id) return;
-
-    const taskId = active.id as string;
-    const newStatus = over.id as Task["status"];
-
-    await updateTaskStatus({ id: taskId, status: newStatus });
+    await updateTaskStatus({
+      id: active.id as string,
+      status: over.id as Task["status"],
+    });
   };
 
-  if (isLoading) {
+  if (isLoading)
     return (
-      <div className="p-10 text-center text-blue-800 font-bold">
-        Syncing with Database...
+      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-10 text-center text-white/60">
+        <div className="w-6 h-6 border-2 border-white/20 border-t-white/60 rounded-full animate-spin mx-auto mb-3" />
+        Syncing with database...
       </div>
     );
-  }
 
-  if (isError) {
+  if (isError)
     return (
-      <div className="p-10 text-red-500 text-center">
-        Failed to load tasks. Check your connection.
+      <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-10 text-center text-red-400">
+        Failed to load tasks. Please check your connection.
       </div>
     );
-  }
 
   return (
-    <DndContext collisionDetection={pointerWithin} onDragEnd={handleDragEnd}>
-      <div className="w-full h-[calc(100vh-100px)] flex p-6 gap-6 overflow-x-auto">
+    <DndContext
+      collisionDetection={pointerWithin}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="w-full h-[calc(100vh-280px)] flex gap-5 overflow-x-auto pb-2">
         {columnData.map((col) => (
           <Column key={col.id} {...col} />
         ))}
       </div>
+
+      {/* 👇 Renders dragged card in a portal above ALL columns */}
+      <DragOverlay>
+        {activeTask ? <TaskCardOverlay task={activeTask} /> : null}
+      </DragOverlay>
     </DndContext>
   );
 }
 
-function Column({ id, color, title, tasks, shadow }: ColumnProps) {
-  const { setNodeRef } = useDroppable({ id });
+// Lightweight overlay card — no drag hooks needed
+function TaskCardOverlay({ task }: { task: Task }) {
+  const pStyle =
+    priorityStyles[task.priority as keyof typeof priorityStyles] ??
+    priorityStyles.low;
+  return (
+    <div className="bg-white/10 border border-violet-500/50 shadow-2xl shadow-violet-500/20 p-3.5 rounded-xl scale-105 cursor-grabbing">
+      <h3 className="text-white text-sm font-medium leading-snug mb-2.5 truncate">
+        {task.title}
+      </h3>
+      <div
+        className={`inline-flex items-center gap-1.5 text-[10px] px-2 py-1 rounded-lg border font-semibold uppercase tracking-wider ${pStyle.badge}`}
+      >
+        <span className={`w-1.5 h-1.5 rounded-full ${pStyle.dot}`} />
+        {task.priority}
+      </div>
+    </div>
+  );
+}
+
+function Column({ id, title, accent, dot, tasks }: ColumnProps) {
+  const { setNodeRef, isOver } = useDroppable({ id });
   const dispatch = useAppDispatch();
+  const { searchTerm } = useAppSelector((state) => state.ui);
+
   return (
     <div
-      ref={setNodeRef} // This tells dnd-kit this is a drop zone
-      className={`flex-1 min-w-[300px] rounded-xl p-4 shadow-sm ${color} ${shadow}`}
+      ref={setNodeRef}
+      className={`flex flex-col flex-1 min-w-[300px] bg-white/5 backdrop-blur-md border ${accent} rounded-2xl transition-all ${isOver ? "bg-white/10 border-violet-500/40" : ""}`}
     >
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-black text-xl font-bold">{title}</h2>
+      <div className="flex justify-between items-center p-4 border-b border-white/8">
+        <div className="flex items-center gap-2.5">
+          <span className={`w-2 h-2 rounded-full ${dot}`} />
+          <h2 className="text-white/90 font-bold text-sm tracking-wide">
+            {title}
+          </h2>
+          <span className="text-xs text-white/30 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full font-medium">
+            {tasks.length}
+          </span>
+        </div>
         <button
           onClick={() => dispatch(openTaskModal(id as Task["status"]))}
-          className="w-8 h-8 flex items-center justify-center bg-white rounded-full text-gray-400 hover:text-blue-600 hover:shadow-md transition-all font-bold"
+          className="w-7 h-7 flex items-center justify-center bg-white/5 hover:bg-violet-500/20 border border-white/10 hover:border-violet-500/30 rounded-lg text-white/40 hover:text-violet-400 transition-all"
         >
-          +
+          <Plus size={14} />
         </button>
       </div>
 
-      <div className="space-y-3">
+      <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
         {tasks.length === 0 ? (
-          <div className="text-center py-12 text-gray-400 text-sm border-2 border-dashed border-gray-200 rounded-lg">
-            No tasks yet...
+          <div className="flex flex-col items-center justify-center py-10 px-4 border border-dashed border-white/10 rounded-xl mt-1">
+            <div className="text-white/15 mb-2">
+              <PackageOpen size={32} />
+            </div>
+            <p className="text-white/25 text-xs font-medium text-center">
+              {searchTerm ? "No matching tasks" : "Drop tasks here"}
+            </p>
           </div>
         ) : (
           tasks.map((task) => <TaskCard key={task.id} task={task} />)
@@ -139,55 +196,72 @@ function Column({ id, color, title, tasks, shadow }: ColumnProps) {
   );
 }
 
+const priorityStyles = {
+  high: {
+    badge: "bg-red-500/15 text-red-400 border-red-500/20",
+    dot: "bg-red-400",
+  },
+  medium: {
+    badge: "bg-amber-500/15 text-amber-400 border-amber-500/20",
+    dot: "bg-amber-400",
+  },
+  low: {
+    badge: "bg-emerald-500/15 text-emerald-400 border-emerald-500/20",
+    dot: "bg-emerald-400",
+  },
+};
+
 function TaskCard({ task }: { task: Task }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: task.id,
-      data: {
-        status: task.status,
-      },
+      data: { status: task.status },
     });
   const [deleteTask] = useDeleteTaskMutation();
 
   const style = {
     transform: CSS.Translate.toString(transform),
-    zIndex: isDragging ? 100 : 1, //z-index so the dragging card stays on top
-    touchAction: "none", //Prevent touch interference (Essential for performance)
+    touchAction: "none",
   };
+
+  const pStyle =
+    priorityStyles[task.priority as keyof typeof priorityStyles] ??
+    priorityStyles.low;
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
-      className={`group border border-gray-200 bg-white p-4 rounded-lg shadow-sm cursor-grab active:cursor-grabbing transition-all 
-        ${isDragging ? "opacity-80 border-blue-500 scale-105 shadow-xl" : "hover:border-blue-400 hover:shadow-md"}
-      `}
+      className={
+        `group bg-white/5 hover:bg-white/8 border border-white/10 hover:border-white/20 p-3.5 rounded-xl transition-all
+        ${isDragging ? "opacity-30" : ""}` // 👈 just fade original, overlay shows the "live" card
+      }
     >
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-gray-800 group-hover:text-blue-600 transition-colors">
+      <div
+        {...attributes}
+        {...listeners}
+        className="flex items-start justify-between gap-2 cursor-grab active:cursor-grabbing"
+      >
+        <div className="flex-1 min-w-0">
+          <h3 className="text-white/80 group-hover:text-white text-sm font-medium leading-snug mb-2.5 transition-colors truncate">
             {task.title}
           </h3>
-          <span
-            className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold tracking-wider  ${
-              task.priority === "high"
-                ? "bg-red-100 text-red-600 group-hover:bg-red-200 group-hover:text-red-600 transition-colors"
-                : "bg-gray-100 text-gray-500 group-hover:bg-gray-200 group-hover:text-gray-600 transition-colors"
-            }`}
+          <div
+            className={`inline-flex items-center gap-1.5 text-[10px] px-2 py-1 rounded-lg border font-semibold uppercase tracking-wider ${pStyle.badge}`}
           >
+            <span className={`w-1.5 h-1.5 rounded-full ${pStyle.dot}`} />
             {task.priority}
-          </span>
+          </div>
         </div>
         <button
           onClick={(e) => {
-            e.stopPropagation(); // Prevent drag from starting as bubble ups to parent
+            e.stopPropagation();
             deleteTask(task.id);
           }}
-          className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-600 text-red-500 transition-opacity"
+          onPointerDown={(e) => e.stopPropagation()}
+          className="opacity-0 group-hover:opacity-100 p-1.5 text-white/20 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all flex-shrink-0"
         >
-          <Trash2 className="flex-shrink-0 size-5" />
+          <Trash2 size={13} />
         </button>
       </div>
     </div>

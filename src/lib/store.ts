@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { taskSlice } from "./features/tasks/taskSlice";
+import authReducer from "./features/auth/authSlice";
 import uiSlice from "./features/ui/uiSlice";
 import { apiSlice } from "./features/api/apiSlice";
 
@@ -8,6 +9,7 @@ export const makeStore = () => {
     reducer: {
       tasks: taskSlice.reducer,
       ui: uiSlice.reducer,
+      auth: authReducer,
       [apiSlice.reducerPath]: apiSlice.reducer,
     },
     middleware: (getDefaultMiddleware) =>

@@ -2,52 +2,70 @@
 
 import { setFilterPriority, setSearchTerm } from "@/lib/features/ui/uiSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { Filter, Search } from "lucide-react";
+import { Search } from "lucide-react";
+
+const priorityConfig = {
+  all: {
+    label: "All",
+    active: "bg-white/15 text-white border-white/20",
+    inactive:
+      "text-white/40 border-white/10 hover:border-white/20 hover:text-white/60",
+  },
+  low: {
+    label: "Low",
+    active: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+    inactive: "text-white/40 border-white/10 hover:text-emerald-400/70",
+  },
+  medium: {
+    label: "Medium",
+    active: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+    inactive: "text-white/40 border-white/10 hover:text-amber-400/70",
+  },
+  high: {
+    label: "High",
+    active: "bg-red-500/20 text-red-400 border-red-500/30",
+    inactive: "text-white/40 border-white/10 hover:text-red-400/70",
+  },
+};
 
 function FilterBar() {
   const { searchTerm, filterPriority } = useAppSelector((state) => state.ui);
   const dispatch = useAppDispatch();
 
-  const priorities: ("all" | "low" | "medium" | "high")[] = [
-    "all",
-    "low",
-    "medium",
-    "high",
-  ];
-
   return (
-    <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-8 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-      {/* Search Input */}
-      <div className="relative w-full lg:w-96">
+    <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-6 bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl">
+      {/* Search */}
+      <div className="relative w-full lg:w-80">
         <Search
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-          size={18}
+          className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30"
+          size={16}
         />
         <input
           type="text"
           placeholder="Search tasks..."
-          className="w-full pl-10 pr-4 py-2 bg-gray-50 placeholder:text-gray-400 placeholder:text-sm text-gray-800 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+          className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 placeholder:text-white/25 text-white/80 text-sm rounded-xl focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500/50 outline-none transition-all"
           value={searchTerm}
           onChange={(e) => dispatch(setSearchTerm(e.target.value))}
         />
       </div>
 
       {/* Priority Filters */}
-      <div className="flex items-center gap-2 overflow-x-auto w-full lg:w-auto pb-2 md:pb-0">
-        <Filter size={16} className="text-gray-400 mr-1 shrink-0" />
-        {priorities.map((p) => (
-          <button
-            key={p}
-            onClick={() => dispatch(setFilterPriority(p))}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium capitalize transition-all whitespace-nowrap ${
-              filterPriority === p
-                ? "bg-blue-600 text-white shadow-md shadow-blue-100"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
-          >
-            {p}
-          </button>
-        ))}
+      <div className="flex items-center gap-2">
+        {(
+          Object.keys(priorityConfig) as Array<keyof typeof priorityConfig>
+        ).map((p) => {
+          const cfg = priorityConfig[p];
+          const isActive = filterPriority === p;
+          return (
+            <button
+              key={p}
+              onClick={() => dispatch(setFilterPriority(p))}
+              className={`px-4 py-2 rounded-xl text-xs font-semibold capitalize border transition-all ${isActive ? cfg.active : cfg.inactive}`}
+            >
+              {cfg.label}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

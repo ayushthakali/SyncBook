@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { ChevronDown, Flag } from "lucide-react"; // npm install lucide-react
+import { ChevronDown } from "lucide-react";
 
 export type Priority = "low" | "medium" | "high";
 
@@ -9,7 +9,9 @@ interface PriorityOption {
   value: Priority;
   label: string;
   color: string;
-  bg: string;
+  dot: string;
+  border: string;
+  activeBg: string;
 }
 
 interface PriorityDropdownType {
@@ -21,20 +23,26 @@ const options: PriorityOption[] = [
   {
     value: "low",
     label: "Low Priority",
-    color: "text-blue-600",
-    bg: "bg-blue-50",
+    color: "text-emerald-400",
+    dot: "bg-emerald-400",
+    border: "border-emerald-500/40",
+    activeBg: "bg-emerald-500/10",
   },
   {
     value: "medium",
     label: "Medium Priority",
-    color: "text-orange-600",
-    bg: "bg-orange-50",
+    color: "text-amber-400",
+    dot: "bg-amber-400",
+    border: "border-amber-500/40",
+    activeBg: "bg-amber-500/10",
   },
   {
     value: "high",
     label: "High Priority",
-    color: "text-red-600",
-    bg: "bg-red-50",
+    color: "text-red-400",
+    dot: "bg-red-400",
+    border: "border-red-500/40",
+    activeBg: "bg-red-500/10",
   },
 ];
 
@@ -45,12 +53,11 @@ export default function PriorityDropdown({
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        containerRef.current && //containerRef.current = <div>
-        !containerRef.current.contains(event.target as Node) //event.target -> actual element clicked eg. button
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
       }
@@ -63,7 +70,7 @@ export default function PriorityDropdown({
 
   return (
     <div className="relative w-full" ref={containerRef}>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-2">
         Priority
       </label>
 
@@ -71,27 +78,27 @@ export default function PriorityDropdown({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full flex items-center justify-between p-3 border rounded-xl transition-all ${
+        className={`w-full flex items-center justify-between p-3 border rounded-xl transition-all bg-white/5 ${
           isOpen
-            ? "border-blue-500 ring-2 ring-blue-50"
-            : "border-gray-200 hover:border-gray-300"
-        } bg-white`}
+            ? `${selected.border} ring-1 ring-inset ${selected.activeBg}`
+            : "border-white/10 hover:border-white/20"
+        }`}
       >
-        <div className="flex items-center gap-2">
-          <Flag size={16} className={selected.color} fill="currentColor" />
-          <span className="font-medium text-gray-700 text-sm">
+        <div className="flex items-center gap-2.5">
+          <span className={`w-2 h-2 rounded-full ${selected.dot} shadow-sm`} />
+          <span className={`font-medium text-sm ${selected.color}`}>
             {selected.label}
           </span>
         </div>
         <ChevronDown
-          size={18}
-          className={`text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          size={15}
+          className={`text-white/30 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
 
-      {/* Animated Menu */}
+      {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute z-[110] w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
+        <div className="absolute z-[110] w-full mt-2 bg-[#0f0f13] border border-white/10 rounded-xl shadow-2xl shadow-black/50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
           {options.map((opt) => (
             <button
               key={opt.value}
@@ -100,16 +107,19 @@ export default function PriorityDropdown({
                 onChange(opt.value);
                 setIsOpen(false);
               }}
-              className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors ${
-                value === opt.value ? opt.bg : ""
+              className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all ${
+                value === opt.value
+                  ? `${opt.activeBg} ${opt.color}`
+                  : "text-white/40 hover:bg-white/5 hover:text-white/70"
               }`}
             >
-              <Flag size={14} className={opt.color} fill="currentColor" />
               <span
-                className={`text-sm font-medium  ${value === opt.value ? opt.color : "text-gray-600"}`}
-              >
-                {opt.label}
-              </span>
+                className={`w-2 h-2 rounded-full flex-shrink-0 ${opt.dot} ${value === opt.value ? "opacity-100" : "opacity-40"}`}
+              />
+              <span className="text-sm font-medium">{opt.label}</span>
+              {value === opt.value && (
+                <span className="ml-auto text-xs opacity-60">✓</span>
+              )}
             </button>
           ))}
         </div>

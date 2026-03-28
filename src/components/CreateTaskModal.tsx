@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { closeTaskModal } from "@/lib/features/ui/uiSlice";
 import { Task } from "@/lib/features/tasks/taskSlice";
 import { useCreateTaskMutation } from "@/lib/features/api/apiSlice";
+import { X } from "lucide-react";
 
 interface Input {
   title: string;
@@ -13,21 +14,13 @@ interface Input {
 }
 
 function CreateTaskModal() {
-  const [input, setInput] = useState<Input>({
-    title: "",
-    priority: "medium",
-  });
-
+  const [input, setInput] = useState<Input>({ title: "", priority: "medium" });
   const [createTask] = useCreateTaskMutation();
   const dispatch = useAppDispatch();
   const { activeColumn, isTaskModalOpen } = useAppSelector((state) => state.ui);
 
   useEffect(() => {
-    if (isTaskModalOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
+    document.body.style.overflow = isTaskModalOpen ? "hidden" : "auto";
     return () => {
       document.body.style.overflow = "auto";
     };
@@ -38,45 +31,55 @@ function CreateTaskModal() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeColumn || !input.title.trim()) return;
-
     try {
       await createTask({
         title: input.title,
         description: "",
         status: activeColumn as Task["status"],
         priority: input.priority,
-      }).unwrap(); //-> converts a dispatched async action into a standard Promise with direct success/error handling.
-
+      }).unwrap();
       setInput({ title: "", priority: "medium" });
       dispatch(closeTaskModal());
     } catch (err) {
-      console.error("Failed to save the task: ", err);
+      console.error("Failed to save task:", err);
     }
   };
 
   return (
     <div
       onClick={() => dispatch(closeTaskModal())}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 animate-in fade-in zoom-in duration-200"
+        className="bg-[#0f0f13] border border-white/10 w-full max-w-md rounded-2xl shadow-2xl shadow-black/50 p-6 animate-in fade-in zoom-in duration-200"
       >
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">
-          Create New Task
-        </h2>
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h2 className="text-lg font-bold text-white">New Task</h2>
+            <p className="text-white/30 text-xs mt-0.5">
+              Add a task to your board
+            </p>
+          </div>
+          <button
+            onClick={() => dispatch(closeTaskModal())}
+            className="p-1.5 text-white/30 hover:text-white/70 hover:bg-white/5 rounded-lg transition-all"
+          >
+            <X size={16} />
+          </button>
+        </div>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-2">
               Task Title
             </label>
             <input
               autoFocus
               type="text"
-              className="w-full p-3 border border-gray-200 text-gray-700 hover:border-gray-300 placeholder:text-gray-400 text-sm font-medium placeholder:text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
-              placeholder="Your task title..."
+              className="w-full p-3 bg-white/5 border border-white/10 text-white/80 placeholder:text-white/20 text-sm rounded-xl focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500/40 outline-none transition-all"
+              placeholder="What needs to be done?"
               value={input.title}
               onChange={(e) =>
                 setInput((prev) => ({ ...prev, title: e.target.value }))
@@ -87,24 +90,21 @@ function CreateTaskModal() {
           <PriorityDropdown
             value={input.priority}
             onChange={(value) =>
-              setInput((prev) => ({
-                ...prev,
-                priority: value,
-              }))
+              setInput((prev) => ({ ...prev, priority: value }))
             }
           />
 
-          <div className="flex gap-3 mt-6">
+          <div className="flex gap-3 pt-2">
             <button
               type="button"
               onClick={() => dispatch(closeTaskModal())}
-              className="flex-1 py-2.5 text-sm bg-gray-100 border border-gray-200 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition-colors cursor-pointer shadow-lg"
+              className="flex-1 py-2.5 text-sm bg-white/5 border border-white/10 text-white/50 font-medium hover:bg-white/10 rounded-xl transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 py-2.5 text-sm bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all active:scale-95 cursor-pointer"
+              className="flex-1 py-2.5 text-sm bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold rounded-xl shadow-lg shadow-violet-500/20 transition-all active:scale-95"
             >
               Create Task
             </button>
