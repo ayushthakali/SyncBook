@@ -1,7 +1,7 @@
 "use client";
 
 import { useGetTasksQuery } from "@/lib/features/api/apiSlice";
-import { CheckCircle2, ListTodo, Zap } from "lucide-react";
+import { CheckCircle2, ListTodo, Timer } from "lucide-react";
 import { useMemo } from "react";
 
 export default function StatsHeader() {
@@ -18,7 +18,7 @@ export default function StatsHeader() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       {/* Total Tasks */}
-      <div className="bg-white/5 backdrop-blur-md border border-white/10 p-5 rounded-2xl flex items-center gap-4 hover:bg-white/8 transition-all">
+      <div className="bg-white/10 backdrop-blur-md border border-white/20 p-5 rounded-2xl flex items-center gap-4 hover:bg-white/15 transition-all">
         <div className="p-3 bg-violet-500/20 text-violet-400 rounded-xl border border-violet-500/20">
           <ListTodo size={20} />
         </div>
@@ -31,9 +31,9 @@ export default function StatsHeader() {
       </div>
 
       {/* In Progress */}
-      <div className="bg-white/5 backdrop-blur-md border border-white/10 p-5 rounded-2xl flex items-center gap-4 hover:bg-white/8 transition-all">
+      <div className="bg-white/10 backdrop-blur-md border border-white/20 p-5 rounded-2xl flex items-center gap-4 hover:bg-white/15 transition-all">
         <div className="p-3 bg-amber-500/20 text-amber-400 rounded-xl border border-amber-500/20">
-          <Zap size={20} />
+          <Timer size={20} />
         </div>
         <div>
           <p className="text-xs text-white/40 font-medium uppercase tracking-wider mb-1">
@@ -44,7 +44,7 @@ export default function StatsHeader() {
       </div>
 
       {/* Progress Bar */}
-      <div className="bg-white/5 backdrop-blur-md border border-white/10 p-5 rounded-2xl hover:bg-white/8 transition-all">
+      <div className="bg-white/10 backdrop-blur-md border border-white/20 p-5 rounded-2xl hover:bg-white/15 transition-all">
         <div className="flex items-center gap-3 mb-3">
           <div className="p-2.5 bg-emerald-500/20 text-emerald-400 rounded-xl border border-emerald-500/20">
             <CheckCircle2 size={18} />

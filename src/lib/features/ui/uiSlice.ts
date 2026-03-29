@@ -1,16 +1,19 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { Task } from "../tasks/taskSlice";
 
 interface UIState {
-  isTaskModalOpen: boolean;
-  activeColumn: "todo" | "in-progress" | "done" | null;
+  isModalOpen: boolean;
+  modalType: "todo" | "in-progress" | "done" | null;
   searchTerm: string;
+  editingTask: Task | null;
   filterPriority: "all" | "low" | "medium" | "high";
 }
 
 const initialState: UIState = {
-  isTaskModalOpen: false,
-  activeColumn: null,
+  isModalOpen: false,
+  modalType: null,
   searchTerm: "",
+  editingTask: null,
   filterPriority: "all",
 };
 
@@ -22,12 +25,18 @@ const uiSlice = createSlice({
       state,
       action: PayloadAction<"todo" | "in-progress" | "done">,
     ) => {
-      state.isTaskModalOpen = true;
-      state.activeColumn = action.payload;
+      state.isModalOpen = true;
+      state.modalType = action.payload;
+      state.editingTask = null;
     },
-    closeTaskModal: (state) => {
-      state.isTaskModalOpen = false;
-      state.activeColumn = null;
+    openEditModal: (state, action: PayloadAction<Task>) => {
+      state.isModalOpen = true;
+      state.modalType = action.payload.status;
+      state.editingTask = action.payload;
+    },
+    closeModal: (state) => {
+      state.isModalOpen = false;
+      state.editingTask = null;
     },
     setSearchTerm: (state, action) => {
       state.searchTerm = action.payload;
@@ -44,7 +53,8 @@ const uiSlice = createSlice({
 export default uiSlice;
 export const {
   openTaskModal,
-  closeTaskModal,
+  openEditModal,
+  closeModal,
   setSearchTerm,
   setFilterPriority,
 } = uiSlice.actions;

@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import PriorityDropdown, { Priority } from "./PriorityDropdown";
+import PriorityDropdown, { Priority } from "../PriorityDropdown";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { closeTaskModal } from "@/lib/features/ui/uiSlice";
-import { Task } from "@/lib/features/tasks/taskSlice";
+import { closeModal } from "@/lib/features/ui/uiSlice";
+import { Task, updateTask } from "@/lib/features/tasks/taskSlice";
 import { useCreateTaskMutation } from "@/lib/features/api/apiSlice";
 import { X } from "lucide-react";
 
@@ -13,33 +13,43 @@ interface Input {
   priority: Priority;
 }
 
-function CreateTaskModal() {
-  const [input, setInput] = useState<Input>({ title: "", priority: "medium" });
+function TaskModal() {
+  const { modalType, isModalOpen, editingTask } = useAppSelector(
+    (state) => state.ui,
+  );
+  const [input, setInput] = useState<Input>({
+    title: editingTask?.title ?? "",
+    priority: editingTask?.priority ?? "low",
+  });
   const [createTask] = useCreateTaskMutation();
   const dispatch = useAppDispatch();
-  const { activeColumn, isTaskModalOpen } = useAppSelector((state) => state.ui);
 
   useEffect(() => {
-    document.body.style.overflow = isTaskModalOpen ? "hidden" : "auto";
+    document.body.style.overflow = isModalOpen ? "hidden" : "auto";
+
     return () => {
       document.body.style.overflow = "auto";
     };
-  }, [isTaskModalOpen]);
+  }, [isModalOpen]);
 
-  if (!isTaskModalOpen) return null;
+  if (!isModalOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!activeColumn || !input.title.trim()) return;
+    if (!modalType || !input.title.trim()) return;
     try {
-      await createTask({
-        title: input.title,
-        description: "",
-        status: activeColumn as Task["status"],
-        priority: input.priority,
-      }).unwrap();
+      if (editingTask) {
+        await updateTask
+      } else {
+        await createTask({
+          title: input.title,
+          description: "",
+          status: modalType as Task["status"],
+          priority: input.priority,
+        }).unwrap();
+      }
       setInput({ title: "", priority: "medium" });
-      dispatch(closeTaskModal());
+      dispatch(closeModal());
     } catch (err) {
       console.error("Failed to save task:", err);
     }
@@ -47,7 +57,7 @@ function CreateTaskModal() {
 
   return (
     <div
-      onClick={() => dispatch(closeTaskModal())}
+      onClick={() => dispatch(closeModal())}
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4"
     >
       <div
@@ -63,7 +73,7 @@ function CreateTaskModal() {
             </p>
           </div>
           <button
-            onClick={() => dispatch(closeTaskModal())}
+            onClick={() => dispatch(closeModal())}
             className="p-1.5 text-white/30 hover:text-white/70 hover:bg-white/5 rounded-lg transition-all"
           >
             <X size={16} />
@@ -97,7 +107,7 @@ function CreateTaskModal() {
           <div className="flex gap-3 pt-2">
             <button
               type="button"
-              onClick={() => dispatch(closeTaskModal())}
+              onClick={() => dispatch(closeModal())}
               className="flex-1 py-2.5 text-sm bg-white/5 border border-white/10 text-white/50 font-medium hover:bg-white/10 rounded-xl transition-all"
             >
               Cancel
@@ -115,4 +125,4 @@ function CreateTaskModal() {
   );
 }
 
-export default CreateTaskModal;
+export default TaskModal;

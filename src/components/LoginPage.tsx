@@ -12,7 +12,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[url('/bg3.jpg')] bg-cover bg-fixed bg-no-repeat bg-center relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-[url('/bg5.jpg')] bg-cover bg-fixed bg-no-repeat bg-center relative overflow-hidden">
       {/* Dark overlay for depth */}
       <div className="absolute inset-0 bg-black/50" />
 
