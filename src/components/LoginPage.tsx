@@ -12,7 +12,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[url('/bg5.jpg')] bg-cover bg-fixed bg-no-repeat bg-center relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-[url('/bg4.jpg')] bg-cover bg-fixed bg-no-repeat bg-center relative overflow-hidden">
       {/* Dark overlay for depth */}
       <div className="absolute inset-0 bg-black/50" />
 
@@ -26,7 +26,7 @@ export default function LoginPage() {
           {/* Heading */}
           <div className="text-center mb-8">
             <h1 className="text-4xl font-black tracking-tight text-white mb-2">
-              SyncBook
+              TrackBoard
             </h1>
             <p className="text-sm text-white/50 leading-relaxed">
               AI-powered workspace for your

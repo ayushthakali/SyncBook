@@ -43,7 +43,7 @@ function FilterBar() {
         <input
           type="text"
           placeholder="Search tasks..."
-          className="w-full pl-10 pr-4 py-2.5 bg-white/20 border border-white/10 placeholder:text-white/75 text-white/80 text-sm rounded-xl focus:ring-1 focus:ring-violet-500/70 focus:border-violet-500/70 outline-none transition-all"
+          className="w-full pl-10 pr-4 py-2.5 bg-white/10 border border-white/10 placeholder:text-white/60 text-white/80 text-sm rounded-xl focus:ring-1 focus:ring-violet-500/70 focus:border-violet-500/70 outline-none transition-all"
           value={searchTerm}
           onChange={(e) => dispatch(setSearchTerm(e.target.value))}
         />
