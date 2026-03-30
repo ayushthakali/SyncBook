@@ -1,4 +1,4 @@
-# SyncBook
+# TaskBoard
 
 > A high-performance, real-time Kanban project management tool with a sleek Glassmorphism aesthetic. Move a card on your phone — watch it slide on your desktop instantly.
 
