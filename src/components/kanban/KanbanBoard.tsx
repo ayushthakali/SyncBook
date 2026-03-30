@@ -7,6 +7,9 @@ import {
   DragEndEvent,
   DragOverlay,
   DragStartEvent,
+  useSensors,
+  useSensor,
+  PointerSensor,
 } from "@dnd-kit/core";
 import {
   useGetTasksQuery,
@@ -16,6 +19,7 @@ import { useState } from "react";
 import Column from "./Column";
 import TaskCardOverlay from "./TaskCardOverlay";
 import { useAppSelector } from "@/lib/hooks";
+import { SkeletonCard } from "./SkeletonCard";
 
 export interface ColumnProps {
   id: string;
@@ -43,6 +47,14 @@ export default function KanbanBoard() {
       filterPriority === "all" || task.priority === filterPriority;
     return matchesSearch && matchesPriority;
   };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5, // Mouse must move 5px before dragging starts
+      },
+    }),
+  );
 
   const filteredTasks = {
     todo: data.todo.filter(filteredFn),
@@ -99,9 +111,20 @@ export default function KanbanBoard() {
 
   if (isLoading)
     return (
-      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-10 text-center text-white/60">
-        <div className="w-6 h-6 border-2 border-white/20 border-t-white/60 rounded-full animate-spin mx-auto mb-3" />
-        Syncing with database...
+      <div className="w-full h-[calc(100vh-280px)] flex gap-5 overflow-x-auto pb-2">
+        {[1, 2, 3].map((col) => (
+          <div
+            key={col}
+            className="flex-1 min-w-[300px] bg-white/5 border border-white/5 rounded-2xl p-4"
+          >
+            <div className="h-6 bg-white/10 rounded w-1/3 mb-6 animate-pulse" />
+            <div className="space-y-3">
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
+            </div>
+          </div>
+        ))}
       </div>
     );
 
@@ -117,6 +140,7 @@ export default function KanbanBoard() {
       collisionDetection={pointerWithin}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
+      sensors={sensors}
     >
       <div className="w-full h-[calc(100vh-280px)] flex gap-5 overflow-x-auto pb-2">
         {columnData.map((col) => (

@@ -10,10 +10,11 @@ import UserNav from "@/components/UserNav";
 
 export default function Home() {
   const { user, isLoading } = useAppSelector((state) => state.auth);
+  const { editingTask } = useAppSelector((state) => state.ui);
 
   if (isLoading)
     return (
-      <div className="h-screen flex items-center justify-center bg-[url('/bg5.jpg')] bg-cover bg-center">
+      <div className="h-screen flex items-center justify-center bg-[url('/bg3.jpg')] bg-cover bg-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
           <p className="text-white/60 text-sm font-medium tracking-wide">
@@ -53,7 +54,7 @@ export default function Home() {
         </div>
       </div>
 
-      <TaskModal />
+      <TaskModal key={editingTask?.id ?? "new"} />
     </main>
   );
 }
