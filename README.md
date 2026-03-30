@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SyncBook
 
-## Getting Started
+> A high-performance, real-time Kanban project management tool with a sleek Glassmorphism aesthetic. Move a card on your phone — watch it slide on your desktop instantly.
 
-First, run the development server:
+---
+
+## ✨ Features
+
+- **Real-time Syncing** — Powered by Supabase WebSockets. Changes propagate instantly across all connected devices.
+- **Secure Authentication** — Social login via Google OAuth 2.0.
+- **Drag & Drop** — Intuitive interface built with `@dnd-kit` for a smooth, accessible experience.
+- **Glassmorphism UI** — Dark-themed design with backdrop blurs and high-end CSS effects.
+- **Optimistic Updates** — RTK Query cache updates instantly on drag, with automatic rollback if the server fails.
+- **Data Persistence** — PostgreSQL database with Row Level Security (RLS) ensuring strict user data privacy.
+
+---
+
+## 🚀 Tech Stack
+
+| Layer | Technology |
+| Frontend | Next.js 16 (App Router), TypeScript, Tailwind CSS |
+| Backend / Database | Supabase (PostgreSQL), PostgREST API |
+| Auth | Supabase Auth, Google OAuth 2.0 |
+| State Management | Redux Toolkit, RTK Query |
+| Drag & Drop | @dnd-kit/core |
+
+---
+
+## 🛠️ Getting Started
+
+### 1. Prerequisites
+
+- Node.js 18+
+- A [Supabase](https://supabase.com) project (free tier works perfectly)
+
+### 2. Installation
+
+```bash
+git clone https://github.com/your-username/your-repo-name.git
+cd your-repo-name
+npm install
+```
+
+### 3. Environment Setup
+
+Create a `.env.local` file in the root directory:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### 4. Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see your board in action.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🔐 Database Schema & Security
 
-## Learn More
+This project uses Row Level Security (RLS) to ensure users can only access their own tasks.
 
-To learn more about Next.js, take a look at the following resources:
+```sql
+-- Task table
+CREATE TABLE tasks (
+  id          UUID      PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id     UUID      REFERENCES auth.users(id),
+  title       TEXT      NOT NULL,
+  description TEXT,
+  status      TEXT      DEFAULT 'todo',
+  priority    TEXT      DEFAULT 'low',
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+);
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+-- RLS Policy: users can only read and write their own tasks
+CREATE POLICY "Users can manage their own tasks"
+ON tasks FOR ALL
+USING (auth.uid() = user_id);
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 📜 License
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Distributed under the MIT License.
