@@ -29,6 +29,7 @@ export interface ColumnProps {
   tasks: Task[];
 }
 
+
 export default function KanbanBoard() {
   const {
     data = { todo: [], inProgress: [], done: [] },

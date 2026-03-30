@@ -12,8 +12,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[url('/bg4.jpg')] bg-cover bg-fixed bg-no-repeat bg-center relative overflow-hidden">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Dark overlay */}
+
+      <Image
+        src="/bg4.jpg"
+        alt="bgimage"
+        fill
+        priority
+        className="object-cover object-center"
+        style={{ zIndex: 0 }}
+      />
       <div className="absolute inset-0 bg-black/55" />
 
       {/* Ambient glow blobs */}
@@ -32,7 +41,8 @@ export default function LoginPage() {
                   width={36}
                   height={36}
                   alt="TrackBoard logo"
-                  className="object-contain"
+                  priority
+                  className="w-auto h-auto object-contain"
                 />
               </div>
             </div>
@@ -59,10 +69,7 @@ export default function LoginPage() {
           {/* Google Button */}
           <button
             onClick={handleLogin}
-            className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50
-              active:bg-gray-100 py-3 px-6 rounded-xl font-semibold text-gray-800 text-sm
-              transition-all duration-200 shadow-lg shadow-black/20 hover:shadow-xl
-              hover:shadow-black/30 hover:-translate-y-0.5 active:translate-y-0"
+            className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 active:bg-gray-100 py-3 px-6 rounded-xl font-semibold text-gray-800 text-sm transition-all duration-200 shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 hover:-translate-y-0.5 active:translate-y-0"
           >
             <Image
               src="https://www.google.com/favicon.ico"
