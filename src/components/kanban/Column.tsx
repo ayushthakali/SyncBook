@@ -17,6 +17,10 @@ export default function Column({ id, title, accent, dot, tasks }: ColumnProps) {
     <div
       ref={setNodeRef}
       className={`flex flex-col flex-1 min-w-[300px] bg-white/10 backdrop-blur-md border ${accent} rounded-2xl transition-all  ${isOver ? "bg-white/10 border-violet-500/40" : ""}`}
+      style={{
+        scrollbarWidth: "thin",
+        scrollbarColor: "rgba(255,255,255,0.2) transparent",
+      }}
     >
       <div className="flex justify-between items-center p-4 border-b border-white/8">
         <div className="flex items-center gap-2.5">

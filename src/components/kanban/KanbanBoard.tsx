@@ -143,7 +143,7 @@ export default function KanbanBoard() {
       onDragEnd={handleDragEnd}
       sensors={sensors}
     >
-      <div className="w-full h-[calc(100vh-280px)] flex gap-5 overflow-x-auto pb-2">
+      <div className="w-full h-[calc(100vh-100px)] flex gap-5 overflow-x-auto pb-2">
         {columnData.map((col) => (
           <Column key={col.id} {...col} />
         ))}
